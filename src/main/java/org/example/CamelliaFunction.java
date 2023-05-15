@@ -8,7 +8,7 @@ public class CamelliaFunction
     private static final int NUMBER_VALUE_T_AND_Y = 8;
     private static final int NUMBER_BIT_IN_INT = 32;
 
-    public static byte F(BigInteger F_IN, BigInteger KE)
+    public static long F(BigInteger F_IN, BigInteger KE)
     {
         BigInteger x = F_IN.xor(KE);
         byte[] t = new byte[NUMBER_VALUE_T_AND_Y];
@@ -82,6 +82,22 @@ public class CamelliaFunction
                 | (y[4] << 24) | (y[5] << 16) | (y[6] <<  8) | y[7];
     }
 
+    public static long FL(BigInteger FL_IN, BigInteger KE)
+    {
+        int x1, x2, k1, k2;
+        x1 = FL_IN.shiftRight(NUMBER_BIT_IN_INT).intValue();
+        x2 = FL_IN.and(BigInteger.valueOf(Camellia.MASK32)).intValue();
+        k1 = KE.shiftRight(NUMBER_BIT_IN_INT).intValue();
+        k2 = KE.and(BigInteger.valueOf(Camellia.MASK32)).intValue();
+//        x1 = (int) (FL_IN >> NUMBER_BIT_IN_INT);
+//        x2 = (int) (FL_IN & Camellia.MASK32);
+//        k1 = (int) (KE >> NUMBER_BIT_IN_INT);
+//        k2 = (int) (KE & Camellia.MASK32);
+        x2 = x2 ^ (CamelliaSBlocks.cycleShift(x1 & k1, 1));
+        x1 = x1 ^ (x2 | k2);
+        return ((long) x1 << NUMBER_BIT_IN_INT) | (long) x2 & 0xFFFFFFFFL;
+    }
+
     public static long FL(long FL_IN, long KE)
     {
         int x1, x2, k1, k2;
@@ -94,6 +110,21 @@ public class CamelliaFunction
         return ((long) x1 << NUMBER_BIT_IN_INT) | (long) x2 & 0xFFFFFFFFL;
     }
 
+    public static long FL_INV(BigInteger FL_INV, BigInteger KE)
+    {
+        int y1, y2, k1, k2;
+        y1 = FL_INV.shiftRight(NUMBER_BIT_IN_INT).intValue();
+        y2 = FL_INV.and(BigInteger.valueOf(Camellia.MASK32)).intValue();
+        k1 = KE.shiftRight(NUMBER_BIT_IN_INT).intValue();
+        k2 = KE.and(BigInteger.valueOf(Camellia.MASK32)).intValue();
+//        y1 =  (int) (FL_INV >> NUMBER_BIT_IN_INT);
+//        y2 = (int) (FL_INV & Camellia.MASK32);
+//        k1 = (int) (KE >> NUMBER_BIT_IN_INT);
+//        k2 = (int) (KE & Camellia.MASK32);
+        y1 = y1 ^ (y2 | k2);
+        y2 = y2 ^ (CamelliaSBlocks.cycleShift(y1 & k1, 1));
+        return ((long) y1 << NUMBER_BIT_IN_INT) | (long) y2 & 0xFFFFFFFFL;
+    }
     public static long FL_INV(long FL_INV, long KE)
     {
         int y1, y2, k1, k2;

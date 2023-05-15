@@ -3,6 +3,7 @@ package org.example;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class Main {
 
@@ -54,55 +55,53 @@ public class Main {
 //            System.out.print(new String(newOldText[i].toByteArray()));
 //        }
 //        System.out.println();
+        Random random = new Random();
+        BigInteger key = new BigInteger(128, random);
 
-        BigInteger key = new BigInteger("340282366920938463463374607431768211455");
+//        BigInteger key = new BigInteger("340282366920938463463374607431768211445");
 
         CamelliaKey k = new CamelliaKey();
         k.generateKeys(key);
 
+        Camellia algo = new Camellia(k);
+//
+        String t = "hello, dasha!";
+        byte[] textByte = t.getBytes();
+        int lengthPadding = 16 - textByte.length % 16;
+        byte[] copyInputArrayWithPadding = new byte[textByte.length + lengthPadding];
+        System.arraycopy(textByte, 0, copyInputArrayWithPadding, 0, textByte.length);
+        for (int i = 0; i < lengthPadding; i++)
+        {
+            copyInputArrayWithPadding[textByte.length + i] = (byte)lengthPadding;
+        }
+        List<BigInteger> encryptText = new ArrayList<>();
+        List<BigInteger> decryptText = new ArrayList<>();
 
-//      Long bla2 = 18446744073709551615;
-        Long bla = Long.MAX_VALUE;
-        System.out.println(Long.MAX_VALUE);
-//        Camellia algo = new Camellia(k);
-//
-//        String t = "hello, dasha!";
-//        byte[] textByte = t.getBytes();
-//        int lengthPadding = 16 - textByte.length % 16;
-//        byte[] copyInputArrayWithPadding = new byte[textByte.length + lengthPadding];
-//        System.arraycopy(textByte, 0, copyInputArrayWithPadding, 0, textByte.length);
-//        for (int i = 0; i < lengthPadding; i++)
-//        {
-//            copyInputArrayWithPadding[textByte.length + i] = (byte)lengthPadding;
-//        }
-//        List<BigInteger> encryptText = new ArrayList<>();
-//        List<BigInteger> decryptText = new ArrayList<>();
-//
-//        for (int i = 0; i < copyInputArrayWithPadding.length; i += 16)
-//        {
-//            byte[] bla = new byte[16];
-//            bla = getArray128(copyInputArrayWithPadding, i);
-//            var encrypt = algo.encrypt(bla);
-//            encryptText.add(encrypt);
-//        }
-//
-//        for (int i = 0; i < encryptText.size(); i++)
-//        {
-//            System.out.println(new String(encryptText.get(i).toByteArray()));
-//        }
-//        System.out.println();
-//
-//
-//        for (int i = 0; i < encryptText.size(); i++)
-//        {
-//            var decrypt = algo.decrypt(encryptText.get(i));
-//            decryptText.add(decrypt);
-//        }
-//        for (int i = 0; i < decryptText.size(); i++)
-//        {
-//            System.out.println(new String(decryptText.get(i).toByteArray()));
-//        }
-//        System.out.println();
+        for (int i = 0; i < copyInputArrayWithPadding.length; i += 16)
+        {
+            byte[] bla = new byte[16];
+            bla = getArray128(copyInputArrayWithPadding, i);
+            var encrypt = algo.encrypt(bla);
+            encryptText.add(encrypt);
+        }
+
+        for (int i = 0; i < encryptText.size(); i++)
+        {
+            System.out.println(new String(encryptText.get(i).toByteArray()));
+        }
+        System.out.println();
+
+
+        for (int i = 0; i < encryptText.size(); i++)
+        {
+            var decrypt = algo.decrypt(encryptText.get(i));
+            decryptText.add(decrypt);
+        }
+        for (int i = 0; i < decryptText.size(); i++)
+        {
+            System.out.println(new String(decryptText.get(i).toByteArray()));
+        }
+        System.out.println();
 //        var dec = algo.decrypt(encrypt);
 //        byte[] bla = dec.toByteArray();
 //        System.out.println(new String(dec.toByteArray()));
