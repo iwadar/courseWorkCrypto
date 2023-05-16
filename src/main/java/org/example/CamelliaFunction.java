@@ -1,57 +1,16 @@
 package org.example;
 
-import java.math.BigInteger;
-import java.text.Bidi;
-
-public class CamelliaFunction
-{
+public class CamelliaFunction {
     private static final int NUMBER_VALUE_T_AND_Y = 8;
     private static final int NUMBER_BIT_IN_INT = 32;
 
-    public static long F(BigInteger F_IN, BigInteger KE)
-    {
-        BigInteger x = F_IN.xor(KE);
-        byte[] t = new byte[NUMBER_VALUE_T_AND_Y];
-        byte[] y = new byte[NUMBER_VALUE_T_AND_Y];
-        BigInteger MASK8 = BigInteger.valueOf(Camellia.MASK8);
-        t[0] = (x.shiftRight(56)).byteValue();
-        t[1] = (x.shiftRight(48)).and(MASK8).byteValue();
-        t[2] = (x.shiftRight(40)).and(MASK8).byteValue();
-        t[3] = (x.shiftRight(32)).and(MASK8).byteValue();
-        t[4] = (x.shiftRight(24)).and(MASK8).byteValue();
-        t[5] = (x.shiftRight(16)).and(MASK8).byteValue();
-        t[6] = (x.shiftRight(8)).and(MASK8).byteValue();
-        t[7] = x.and(MASK8).byteValue();
-
-        t[0] = CamelliaSBlocks.getSBox1(t[0]);
-        t[1] = CamelliaSBlocks.getSBox2(t[1]);
-        t[2] = CamelliaSBlocks.getSBox3(t[2]);
-        t[3] = CamelliaSBlocks.getSBox4(t[3]);
-        t[4] = CamelliaSBlocks.getSBox2(t[4]);
-        t[5] = CamelliaSBlocks.getSBox3(t[5]);
-        t[6] = CamelliaSBlocks.getSBox4(t[6]);
-        t[7] = CamelliaSBlocks.getSBox1(t[7]);
-
-        y[0] = (byte) (t[0] ^ t[2] ^ t[3] ^ t[5] ^ t[6] ^ t[7]);
-        y[1] = (byte) (t[0] ^ t[1] ^ t[3] ^ t[4] ^ t[6] ^ t[7]);
-        y[2] = (byte) (t[0] ^ t[1] ^ t[2] ^ t[4] ^ t[5] ^ t[7]);
-        y[3] = (byte) (t[1] ^ t[2] ^ t[3] ^ t[4] ^ t[5] ^ t[6]);
-        y[4] = (byte) (t[0] ^ t[1] ^ t[5] ^ t[6] ^ t[7]);
-        y[5] = (byte) (t[1] ^ t[2] ^ t[4] ^ t[6] ^ t[7]);
-        y[6] = (byte) (t[2] ^ t[3] ^ t[4] ^ t[5] ^ t[7]);
-        y[7] = (byte) (t[0] ^ t[3] ^ t[4] ^ t[5] ^ t[6]);
-
-        return  (y[0] << 56) | (y[1] << 48) | (y[2] << 40) | (y[3] << 32)
-                | (y[4] << 24) | (y[5] << 16) | (y[6] <<  8) | y[7];
-    }
-
-    public static long F(long F_IN, long KE)
-    {
+    public static long F(long F_IN, long KE) {
         long x = F_IN ^ KE;
+        long F_OUT = 0L;
         byte[] t = new byte[NUMBER_VALUE_T_AND_Y];
         byte[] y = new byte[NUMBER_VALUE_T_AND_Y];
 
-        t[0] = (byte) (x >> 56);
+        t[0] = (byte) ((x >> 56) & Camellia.MASK8);
         t[1] = (byte) ((x >> 48) & Camellia.MASK8);
         t[2] = (byte) ((x >> 40) & Camellia.MASK8);
         t[3] = (byte) ((x >> 32) & Camellia.MASK8);
@@ -69,72 +28,78 @@ public class CamelliaFunction
         t[6] = CamelliaSBlocks.getSBox4(t[6]);
         t[7] = CamelliaSBlocks.getSBox1(t[7]);
 
-        y[0] = (byte) (t[0] ^ t[2] ^ t[3] ^ t[5] ^ t[6] ^ t[7]);
-        y[1] = (byte) (t[0] ^ t[1] ^ t[3] ^ t[4] ^ t[6] ^ t[7]);
-        y[2] = (byte) (t[0] ^ t[1] ^ t[2] ^ t[4] ^ t[5] ^ t[7]);
-        y[3] = (byte) (t[1] ^ t[2] ^ t[3] ^ t[4] ^ t[5] ^ t[6]);
-        y[4] = (byte) (t[0] ^ t[1] ^ t[5] ^ t[6] ^ t[7]);
-        y[5] = (byte) (t[1] ^ t[2] ^ t[4] ^ t[6] ^ t[7]);
-        y[6] = (byte) (t[2] ^ t[3] ^ t[4] ^ t[5] ^ t[7]);
-        y[7] = (byte) (t[0] ^ t[3] ^ t[4] ^ t[5] ^ t[6]);
+        y[0] = (byte) ((t[0] ^ t[2] ^ t[3] ^ t[5] ^ t[6] ^ t[7]) & Camellia.MASK8);
+        y[1] = (byte) ((t[0] ^ t[1] ^ t[3] ^ t[4] ^ t[6] ^ t[7]) & Camellia.MASK8);
+        y[2] = (byte) ((t[0] ^ t[1] ^ t[2] ^ t[4] ^ t[5] ^ t[7]) & Camellia.MASK8);
+        y[3] = (byte) ((t[1] ^ t[2] ^ t[3] ^ t[4] ^ t[5] ^ t[6]) & Camellia.MASK8);
+        y[4] = (byte) ((t[0] ^ t[1] ^ t[5] ^ t[6] ^ t[7]) & Camellia.MASK8);
+        y[5] = (byte) ((t[1] ^ t[2] ^ t[4] ^ t[6] ^ t[7]) & Camellia.MASK8);
+        y[6] = (byte) ((t[2] ^ t[3] ^ t[4] ^ t[5] ^ t[7]) & Camellia.MASK8);
+        y[7] = (byte) ((t[0] ^ t[3] ^ t[4] ^ t[5] ^ t[6]) & Camellia.MASK8);
 
-        return  (y[0] << 56) | (y[1] << 48) | (y[2] << 40) | (y[3] << 32)
-                | (y[4] << 24) | (y[5] << 16) | (y[6] <<  8) | y[7];
-    }
-
-    public static long FL(BigInteger FL_IN, BigInteger KE)
-    {
-        int x1, x2, k1, k2;
-        x1 = FL_IN.shiftRight(NUMBER_BIT_IN_INT).intValue();
-        x2 = FL_IN.and(BigInteger.valueOf(Camellia.MASK32)).intValue();
-        k1 = KE.shiftRight(NUMBER_BIT_IN_INT).intValue();
-        k2 = KE.and(BigInteger.valueOf(Camellia.MASK32)).intValue();
-//        x1 = (int) (FL_IN >> NUMBER_BIT_IN_INT);
-//        x2 = (int) (FL_IN & Camellia.MASK32);
-//        k1 = (int) (KE >> NUMBER_BIT_IN_INT);
-//        k2 = (int) (KE & Camellia.MASK32);
-        x2 = x2 ^ (CamelliaSBlocks.cycleShift(x1 & k1, 1));
-        x1 = x1 ^ (x2 | k2);
-        return ((long) x1 << NUMBER_BIT_IN_INT) | (long) x2 & 0xFFFFFFFFL;
+        for (int i = 0; i < NUMBER_VALUE_T_AND_Y; i++)
+        {
+            F_OUT <<= 8;
+            F_OUT |= y[i] & Camellia.MASK8;
+        }
+        return F_OUT;
     }
 
     public static long FL(long FL_IN, long KE)
     {
+//        1 0011111111110010000000000101001 11100000001110100010001100100111
+
+//                       x1                                  x2
+//        10011111111110010000000000101001 11100000001110100010001100100111
+//        0 1001110100000100011101110011100 00110110011011110100001101100001
+//                       k1                                  k2
+//          1001110100000100011101110011100 00110110011011110100001101100001
+//        00000110000000100000001100000000
+//        110011110000011101101011011001
+
         int x1, x2, k1, k2;
-        x1 = (int) (FL_IN >> NUMBER_BIT_IN_INT);
-        x2 = (int) (FL_IN & Camellia.MASK32);
-        k1 = (int) (KE >> NUMBER_BIT_IN_INT);
-        k2 = (int) (KE & Camellia.MASK32);
-        x2 = x2 ^ (CamelliaSBlocks.cycleShift(x1 & k1, 1));
+        x1 = (int) ((FL_IN >> NUMBER_BIT_IN_INT) & 0xffffffffL);
+        x2 = (int) (FL_IN & 0xffffffffL);
+
+        k1 = (int) (KE >>> NUMBER_BIT_IN_INT);
+        k2 = (int) (KE & 0xffffffffL);
+
+        x2 = x2 ^ (cycleShift((x1 & k1), 1));
         x1 = x1 ^ (x2 | k2);
-        return ((long) x1 << NUMBER_BIT_IN_INT) | (long) x2 & 0xFFFFFFFFL;
+        long bla = ((long) x1) << NUMBER_BIT_IN_INT;
+        bla = bla | (long)x2 & 0xFFFFFFFFL;
+        return bla;
     }
 
-    public static long FL_INV(BigInteger FL_INV, BigInteger KE)
-    {
-        int y1, y2, k1, k2;
-        y1 = FL_INV.shiftRight(NUMBER_BIT_IN_INT).intValue();
-        y2 = FL_INV.and(BigInteger.valueOf(Camellia.MASK32)).intValue();
-        k1 = KE.shiftRight(NUMBER_BIT_IN_INT).intValue();
-        k2 = KE.and(BigInteger.valueOf(Camellia.MASK32)).intValue();
-//        y1 =  (int) (FL_INV >> NUMBER_BIT_IN_INT);
-//        y2 = (int) (FL_INV & Camellia.MASK32);
-//        k1 = (int) (KE >> NUMBER_BIT_IN_INT);
-//        k2 = (int) (KE & Camellia.MASK32);
-        y1 = y1 ^ (y2 | k2);
-        y2 = y2 ^ (CamelliaSBlocks.cycleShift(y1 & k1, 1));
-        return ((long) y1 << NUMBER_BIT_IN_INT) | (long) y2 & 0xFFFFFFFFL;
-    }
+    // & -> 00001110100000000000000000001000
+    // <<?  00011101000000000000000000010000
+    // x2 = 11111101001110100010001100110111
+    // x1 = 1100000100001100110001101011110
+//          1100000100001100110001101011110 00000000000000000000000000000000
+//          1100000100001100110001101011110 11111101001110100010001100110111
+//     x1 = 1100000100001100110001101011110 11111101001110100010001100110111
+
     public static long FL_INV(long FL_INV, long KE)
     {
         int y1, y2, k1, k2;
-        y1 =  (int) (FL_INV >> NUMBER_BIT_IN_INT);
-        y2 = (int) (FL_INV & Camellia.MASK32);
-        k1 = (int) (KE >> NUMBER_BIT_IN_INT);
-        k2 = (int) (KE & Camellia.MASK32);
+        y1 =  (int) (FL_INV >>> NUMBER_BIT_IN_INT);
+        y2 = (int) (FL_INV & 0xffffffffL);
+
+        k1 = (int) (KE >>> NUMBER_BIT_IN_INT);
+        k2 = (int) (KE & 0xffffffffL);
+
         y1 = y1 ^ (y2 | k2);
-        y2 = y2 ^ (CamelliaSBlocks.cycleShift(y1 & k1, 1));
-        return ((long) y1 << NUMBER_BIT_IN_INT) | (long) y2 & 0xFFFFFFFFL;
+        y2 = y2 ^ (cycleShift((y1 & k1), 1));
+        long bla = ((long) y1) << NUMBER_BIT_IN_INT;
+        bla = bla | (long)y2 & 0xFFFFFFFFL;
+        return bla;
     }
 
+    public static int cycleShift(int value, int shift)
+    {
+//        int temp = ((value) >>> (NUMBER_BIT_IN_INT - shift));
+//        return ((value << shift) | temp);
+        return Integer.rotateLeft(value, shift);
+//        return  (value >>> shift) | (value << (NUMBER_BIT_IN_INT - shift));
+    }
 }

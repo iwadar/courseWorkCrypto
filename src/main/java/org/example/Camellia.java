@@ -1,32 +1,20 @@
 package org.example;
-
 import java.math.BigInteger;
 
-public class Camellia
-{
+public class Camellia {
     public static final long MASK8 = 0xffL;
-    public static final long MASK32 = 0xffffL;
-    public static final long MASK64 = 0xffffffL;
-    public static final long MASK128 = 0xffffffffL;
 
     public CamelliaKey key;
 
     public static final long[] c = {0xA09E667F3BCC908BL, 0xB67AE8584CAA73B2L, 0xC6EF372FE94F82BEL,
             0x54FF53A5F1D36F1CL, 0x10E527FADE682D1DL, 0xB05688C2B3E6C1FDL};
-
-
     Camellia (CamelliaKey k)
     {
         this.key = k;
     }
-
-    public BigInteger encrypt(byte[] textByte)
+    public long[] encrypt(long D1, long D2)
     {
-        BigInteger M = new BigInteger(textByte);
-        long D1, D2;
 
-        D1 = M.shiftRight(64).longValue();
-        D2 = M.and(BigInteger.valueOf(MASK64)).longValue();
         D1 = D1 ^ key.kw1;           // Предварительное забеливание
         D2 = D2 ^ key.kw2;
         D2 = D2 ^ CamelliaFunction.F(D1, key.k1);
@@ -53,20 +41,14 @@ public class Camellia
         D1 = D1 ^ CamelliaFunction.F(D2, key.k18);
         D2 = D2 ^ key.kw3;           // Финальное забеливание
         D1 = D1 ^ key.kw4;
-        BigInteger D2Big = BigInteger.valueOf(D2);
-        D2Big = D2Big.shiftLeft(64);
-        BigInteger C = D2Big.or(BigInteger.valueOf(D1));
-        //BigInteger.valueOf((D2 << 64) | D1);
-        return  C;
+        long[] C = {D2, D1};
+        return C;
     }
+//    1 100000100001100110001101011110 11111101001110100010001100110111
+//
 
-    public BigInteger decrypt(BigInteger C)
+    public long[] decrypt(long D1, long D2)
     {
-//        BigInteger M = new BigInteger(textByte);
-        long D1, D2;
-
-        D1 = C.shiftRight(64).longValue();
-        D2 = C.and(BigInteger.valueOf(MASK64)).longValue();
         D1 = D1 ^ key.kw3;           // Предварительное забеливание
         D2 = D2 ^ key.kw4;
         D2 = D2 ^ CamelliaFunction.F(D1, key.k18);
@@ -93,15 +75,8 @@ public class Camellia
         D1 = D1 ^ CamelliaFunction.F(D2, key.k1);
         D2 = D2 ^ key.kw1;           // Финальное забеливание
         D1 = D1 ^ key.kw2;
-        BigInteger D2Big = BigInteger.valueOf(D2);
-        D2Big = D2Big.shiftLeft(64);
-
-
-        BigInteger M = D2Big.or(BigInteger.valueOf(D1));
-//        BigInteger C = BigInteger.valueOf((D2 << 64) | D1);
-//        return  BigInteger.valueOf((D2 << 64) | D1);
+        long[] M = {D2, D1};
         return M;
     }
-
 
 }

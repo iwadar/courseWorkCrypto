@@ -1,197 +1,113 @@
 package org.example;
-
 import java.math.BigInteger;
 
-public class CamelliaKey
-{
-//    public BigInteger kw1, kw2, kw3, kw4;
-//    public BigInteger k1, k2, k3, k4, k5, k6, k7, k8, k9,
-//            k10, k11, k12, k13, k14, k15, k16, k17, k18, k19, k20, k21, k22, k23, k24;
-//    public BigInteger ke1, ke2, ke3, ke4, ke5, ke6;
+public class CamelliaKey {
     public long kw1, kw2, kw3, kw4;
     public long k1, k2, k3, k4, k5, k6, k7, k8, k9,
             k10, k11, k12, k13, k14, k15, k16, k17, k18, k19, k20, k21, k22, k23, k24;
     public long ke1, ke2, ke3, ke4, ke5, ke6;
 
-    private static BigInteger[] getKL_KR(BigInteger key)
+    private static long[] getKL_KR(String strKey)
     {
-        BigInteger[] twoPartOfKey = new BigInteger[2];
-        System.out.println(key.bitLength());
-        if (key.bitLength() == 128)
+        long[] twoPartOfKey = new long[4];
+        byte[] byteKey = strKey.getBytes();
+        int c = -1;
+
+        for (int i = 0; i < (byteKey.length > 32 ? 32 : byteKey.length); i++)
         {
-            twoPartOfKey[0] = key;
-            twoPartOfKey[1] = new BigInteger("0");
+            if (i % 8 == 0)
+            {
+                c++;
+            }
+            twoPartOfKey[c] <<= 8;
+            twoPartOfKey[c] += byteKey[i] & Camellia.MASK8;
         }
-        else if (key.bitLength() == 192)
+        if (byteKey.length <= 24 && byteKey.length > 16)
         {
-            twoPartOfKey[0] = key.shiftRight(64);
-            BigInteger temp = key.and(BigInteger.valueOf(Camellia.MASK64));
-            twoPartOfKey[1] = ((temp).shiftLeft(64)).or((temp.not()));
-        }
-        else if (key.bitLength() == 256)
-        {
-            twoPartOfKey[0] = key.shiftRight(128);
-            twoPartOfKey[1] = key.and(BigInteger.valueOf(Camellia.MASK128));
-        }
-        else
-        {
-            System.out.println("Incorrect length of key");
+            System.out.println("LOG: getKL_KR if (byteKey.length <= 24 && byteKey.length > 16)");
+            twoPartOfKey[3] = ~twoPartOfKey[2];
         }
         return twoPartOfKey;
     }
 
-    private static BigInteger[] getKA_KB(BigInteger[] KL_KR)
+    private static long[] getKA_KB(long[] KL_KR)
     {
-        BigInteger[] KA_KB = new BigInteger[2];
-//        BigInteger D1, D2;
-
+        long[] KA_KB = new long[4];
         long D1, D2;
-        D1 = (KL_KR[0].xor(KL_KR[1])).shiftRight(64).longValue();
-        D2 = (KL_KR[0].xor(KL_KR[1])).and(BigInteger.valueOf(Camellia.MASK64)).longValue();
+        D1 = KL_KR[0] ^ KL_KR[2];
+        D2 = KL_KR[1] ^ KL_KR[3];
         D2 = D2 ^ CamelliaFunction.F(D1, Camellia.c[0]);
         D1 = D1 ^ CamelliaFunction.F(D2, Camellia.c[1]);
-        D1 = D1 ^ (KL_KR[0].shiftRight(64).longValue());
-        D2 = D2 ^ (KL_KR[0].and(BigInteger.valueOf(Camellia.MASK64)).longValue());
+        D1 = D1 ^ KL_KR[0];
+        D2 = D2 ^ KL_KR[1];
         D2 = D2 ^ CamelliaFunction.F(D1, Camellia.c[2]);
         D1 = D1 ^ CamelliaFunction.F(D2, Camellia.c[3]);
-        KA_KB[0] = BigInteger.valueOf((D1 << 64) | D2);
-        D1 = (KA_KB[0].or(KL_KR[1])).shiftRight(64).longValue();
-        D2 = (KA_KB[0].xor(KL_KR[1])).and(BigInteger.valueOf(Camellia.MASK64)).longValue();
+        KA_KB[0] = D1;
+        KA_KB[1] = D2;
+        D1 = KA_KB[0] ^ KL_KR[2];
+        D2 = KA_KB[1] ^ KL_KR[3];
         D2 = D2 ^ CamelliaFunction.F(D1, Camellia.c[4]);
         D1 = D1 ^ CamelliaFunction.F(D2, Camellia.c[5]);
-        KA_KB[1] = BigInteger.valueOf((D1 << 64) | D2);
-
-//        D1 = (KL_KR[0].xor(KL_KR[1])).shiftRight(64);
-//        D2 = (KL_KR[0].xor(KL_KR[1])).and(BigInteger.valueOf(Camellia.MASK64));
-//        D2 = D2.xor(BigInteger.valueOf(CamelliaFunction.F(D1, BigInteger.valueOf(Camellia.c[0]))));
-//        D1 = D1.xor(BigInteger.valueOf(CamelliaFunction.F(D2, BigInteger.valueOf(Camellia.c[1]))));
-//        D1 = D1.xor(KL_KR[0].shiftRight(64));
-//        D2 = D2.xor(KL_KR[0].and(BigInteger.valueOf(Camellia.MASK64)));
-//        D2 = D2.xor(BigInteger.valueOf(CamelliaFunction.F(D1, BigInteger.valueOf(Camellia.c[2]))));
-//        D1 = D1.xor(BigInteger.valueOf(CamelliaFunction.F(D2, BigInteger.valueOf(Camellia.c[3]))));
-//        KA_KB[0] = (D1.shiftLeft(64)).or(D2);
-//        D1 = (KA_KB[0].or(KL_KR[1])).shiftRight(64);
-//        D2 =  (KA_KB[0].xor(KL_KR[1])).and(BigInteger.valueOf(Camellia.MASK64));
-//        D2 = D2.xor(BigInteger.valueOf(CamelliaFunction.F(D1, BigInteger.valueOf(Camellia.c[4]))));
-//        D1 = D1.xor(BigInteger.valueOf(CamelliaFunction.F(D2, BigInteger.valueOf(Camellia.c[5]))));
-//        KA_KB[1] = (D1.shiftLeft(64)).or(D2);
+        KA_KB[2] = D1;
+        KA_KB[3] = D2;
         return KA_KB;
     }
+    private static long[] cycleShiftForPair(long[] values, int shift)
+    {
+        long[] temp = new long[2];
+        long[] newValues = new long[2];
 
-    static BigInteger allOnes(int L)
-    {
-        return BigInteger.ZERO
-                .setBit(L)
-                .subtract(BigInteger.ONE);
-    }
-    static BigInteger cyclicLeftShift(BigInteger n, int k)
-    {
-        return n.shiftLeft(k)
-                .or(n.shiftRight(128 - k))
-                .and(allOnes(128));
-    }
-    private void getSubKeys128(BigInteger[] KL_KR, BigInteger[] KA_KB)
-    {
-        BigInteger MASK64 = BigInteger.valueOf(Camellia.MASK64);
-        kw1 = (cyclicLeftShift(KL_KR[0], 0)).shiftRight(64).longValue();
-        kw2 = (cyclicLeftShift(KL_KR[0], 0)).and(MASK64).longValue();
-        k1  = (cyclicLeftShift(KA_KB[0], 0)).shiftRight(64).longValue();
-        k2  = (cyclicLeftShift(KA_KB[0], 0)).and(MASK64).longValue();
-        k3  = (cyclicLeftShift(KL_KR[0], 15)).shiftRight(64).longValue();
-        k4  = (cyclicLeftShift(KL_KR[0], 15)).and(MASK64).longValue();
-        k5  = (cyclicLeftShift(KA_KB[0], 15)).shiftRight(64).longValue();
-        k6  = (cyclicLeftShift(KA_KB[0], 15)).and(MASK64).longValue();
-        ke1 = (cyclicLeftShift(KA_KB[0], 30)).shiftRight(64).longValue();
-        ke2 = (cyclicLeftShift(KA_KB[0], 0)).and(MASK64).longValue();
-        k7  = (cyclicLeftShift(KL_KR[0], 45)).shiftRight(64).longValue();
-        k8  = (cyclicLeftShift(KL_KR[0], 45)).and(MASK64).longValue();
-        k9  = (cyclicLeftShift(KA_KB[0],45)).shiftRight(64).longValue();
-        k10 = (cyclicLeftShift(KL_KR[0], 60)).and(MASK64).longValue();
-        k11 = (cyclicLeftShift(KA_KB[0],60)).shiftRight(64).longValue();
-        k12 = (cyclicLeftShift(KA_KB[0],60)).and(MASK64).longValue();
-        ke3 = (cyclicLeftShift(KL_KR[0], 77)).shiftRight(64).longValue();
-        ke4 = (cyclicLeftShift(KL_KR[0], 77)).and(MASK64).longValue();
-        k13 = (cyclicLeftShift(KL_KR[0], 94)).shiftRight(64).longValue();
-        k14 = (cyclicLeftShift(KL_KR[0], 94)).and(MASK64).longValue();
-        k15 = (cyclicLeftShift(KA_KB[0],94)).shiftRight(64).longValue();
-        k16 = (cyclicLeftShift(KA_KB[0],94)).and(MASK64).longValue();
-        k17 = (cyclicLeftShift(KL_KR[0], 111)).shiftRight(64).longValue();
-        k18 = (cyclicLeftShift(KL_KR[0], 111)).and(MASK64).longValue();
-        kw3 = (cyclicLeftShift(KA_KB[0],111)).shiftRight(64).longValue();
-        kw4 = (cyclicLeftShift(KA_KB[0],111)).and(MASK64).longValue();
-
-//        kw1 = (KL_KR[0].shiftLeft(0)).shiftRight(64);
-//        kw2 = (KL_KR[0].shiftLeft(0)).and(MASK64);
-//        k1  = (KA_KB[0].shiftLeft(0)).shiftRight(64);
-//        k2  = (KA_KB[0].shiftLeft(0)).and(MASK64);
-//        k3  = (KL_KR[0].shiftLeft(15)).shiftRight(64);
-//        k4  = (KL_KR[0].shiftLeft(15)).and(MASK64);
-//        k5  = (KA_KB[0].shiftLeft(15)).shiftRight(64);
-//        k6  = (KA_KB[0].shiftLeft(15)).and(MASK64);
-//        ke1 = (KA_KB[0].shiftLeft(30)).shiftRight(64);
-//        ke2 = (KA_KB[0].shiftLeft(30)).and(MASK64);
-//        k7  = (KL_KR[0].shiftLeft(45)).shiftRight(64);
-//        k8  = (KL_KR[0].shiftLeft(45)).and(MASK64);
-//        k9  = (KA_KB[0].shiftLeft(45)).shiftRight(64);
-//        k10 = (KL_KR[0].shiftLeft(60)).and(MASK64);
-//        k11 = (KA_KB[0].shiftLeft(60)).shiftRight(64);
-//        k12 = (KA_KB[0].shiftLeft(60)).and(MASK64);
-//        ke3 = (KL_KR[0].shiftLeft(77)).shiftRight(64);
-//        ke4 = (KL_KR[0].shiftLeft(77)).and(MASK64);
-//        k13 = (KL_KR[0].shiftLeft(94)).shiftRight(64);
-//        k14 = (KL_KR[0].shiftLeft(94)).and(MASK64);
-//        k15 = (KA_KB[0].shiftLeft(94)).shiftRight(64);
-//        k16 = (KA_KB[0].shiftLeft(94)).and(MASK64);
-//        k17 = (KL_KR[0].shiftLeft(111)).shiftRight(64);
-//        k18 = (KL_KR[0].shiftLeft(111)).and(MASK64);
-//        kw3 = (KA_KB[0].shiftLeft(111)).shiftRight(64);
-//        kw4 = (KA_KB[0].shiftLeft(111)).and(MASK64);
+        if (shift <= 64)
+        {
+            temp[1] = (values[0] >>> (64 - shift));
+            newValues[0] = (values[0] << shift) + (values[1] >>> (64 - shift));
+            newValues[1] = (values[1] << shift) + temp[1];
+        }
+        else
+        {
+            temp[0] = values[0] >>> 64 - (shift - 64);
+            temp[1] = (values[0] << (shift-64)) + (values[1] >>> 64 - (shift - 64));
+            newValues[0] = (values[1] << 64 - (128 - shift)) + temp[0];
+            newValues[1] = temp[1];
+        }
+        return newValues;
     }
 
-    public void generateKeys(BigInteger keyInit)
+    private void getSubKeys128(long[] KL_KR, long[] KA_KB)
     {
-        BigInteger[] KL_KR = getKL_KR(keyInit);
-        BigInteger[] KA_KB = getKA_KB(KL_KR);
+        long[] KL = {KL_KR[0], KL_KR[1]}, KA = {KA_KB[0], KA_KB[1]};
+        kw1 = KL_KR[0];
+        kw2 = KL_KR[1];
+        k1 = KA_KB[0];
+        k2 = KA_KB[1];
+        k3  = cycleShiftForPair(KL, 15)[0];
+        k4  = cycleShiftForPair(KL, 15)[1];
+        k5  = cycleShiftForPair(KA, 15)[0];
+        k6  = cycleShiftForPair(KA, 15)[1];
+        ke1 = cycleShiftForPair(KA, 30)[0];
+        ke2 = cycleShiftForPair(KA, 30)[1];
+        k7  = cycleShiftForPair(KL, 45)[0];
+        k8  = cycleShiftForPair(KL, 45)[1];
+        k9  = cycleShiftForPair(KA, 45)[0];
+        k10 = cycleShiftForPair(KL, 60)[1];
+        k11 = cycleShiftForPair(KA, 60)[0];
+        k12 = cycleShiftForPair(KA, 60)[1];
+        ke3 = cycleShiftForPair(KL, 77)[0];
+        ke4 = cycleShiftForPair(KL, 77)[1];
+        k13 = cycleShiftForPair(KL, 94)[0];
+        k14 = cycleShiftForPair(KL, 94)[1];
+        k15 = cycleShiftForPair(KA, 94)[0];
+        k16 = cycleShiftForPair(KA, 94)[1];
+        k17 = cycleShiftForPair(KL, 111)[0];
+        k18 = cycleShiftForPair(KL, 111)[1];
+        kw3 = cycleShiftForPair(KA, 111)[0];
+        kw4 = cycleShiftForPair(KA, 111)[1];
+    }
+
+    public void generateKeys(String keyInit)
+    {
+        long[] KL_KR = getKL_KR(keyInit);
+        long[] KA_KB = getKA_KB(KL_KR);
         getSubKeys128(KL_KR, KA_KB);
     }
-//    public BigInteger[] getSubKeys192or256(BigInteger[] KL_KR, BigInteger[] KA_KB)
-//    {
-//        BigInteger MASK64 = BigInteger.valueOf(Camellia.MASK64);
-//        kw1 = (KL_KR[0].shiftLeft(0)).shiftRight(64);
-//        kw2 = (KL <<<   0) & MASK64;
-//        k1  = (KB <<<   0) >> 64;
-//        k2  = (KB <<<   0) & MASK64;
-//        k3  = (KR <<<  15) >> 64;
-//        k4  = (KR <<<  15) & MASK64;
-//        k5  = (KA <<<  15) >> 64;
-//        k6  = (KA <<<  15) & MASK64;
-//        ke1 = (KR <<<  30) >> 64;
-//        ke2 = (KR <<<  30) & MASK64;
-//        k7  = (KB <<<  30) >> 64;
-//        k8  = (KB <<<  30) & MASK64;
-//        k9  = (KL <<<  45) >> 64;
-//        k10 = (KL <<<  45) & MASK64;
-//        k11 = (KA <<<  45) >> 64;
-//        k12 = (KA <<<  45) & MASK64;
-//        ke3 = (KL <<<  60) >> 64;
-//        ke4 = (KL <<<  60) & MASK64;
-//        k13 = (KR <<<  60) >> 64;
-//        k14 = (KR <<<  60) & MASK64;
-//        k15 = (KB <<<  60) >> 64;
-//        k16 = (KB <<<  60) & MASK64;
-//        k17 = (KL <<<  77) >> 64;
-//        k18 = (KL <<<  77) & MASK64;
-//        ke5 = (KA <<<  77) >> 64;
-//        ke6 = (KA <<<  77) & MASK64;
-//        k19 = (KR <<<  94) >> 64;
-//        k20 = (KR <<<  94) & MASK64;
-//        k21 = (KA <<<  94) >> 64;
-//        k22 = (KA <<<  94) & MASK64;
-//        k23 = (KL <<< 111) >> 64;
-//        k24 = (KL <<< 111) & MASK64;
-//        kw3 = (KB <<< 111) >> 64;
-//        kw4 = (KB <<< 111) & MASK64;
-//    }
-
-
 }

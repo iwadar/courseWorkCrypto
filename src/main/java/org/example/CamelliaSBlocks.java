@@ -1,12 +1,11 @@
 package org.example;
 
-public class CamelliaSBlocks
-{
+public class CamelliaSBlocks {
     private static final int NUMBER_BIT_IN_BYTE = 8;
     private static final int NUMBER_BIT_IN_INT = 32;
 
     // размер матрицы S -- 16x16
-    public static final int[][] SBOX1 =  {{112, 130, 44, 236, 179, 39, 192, 229, 228, 133, 87, 53, 234, 12, 174, 65},
+    public static final short[][] SBOX1 =  {{112, 130, 44, 236, 179, 39, 192, 229, 228, 133, 87, 53, 234, 12, 174, 65},
             {35, 239, 107, 147, 69, 25, 165, 33, 237, 14, 79, 78, 29, 101, 146, 189},
             {134, 184, 175, 143, 124, 235, 31, 206, 62, 48, 220, 95, 94, 197, 11, 26},
             {166, 225, 57, 202, 213, 71, 93, 61, 217, 1, 90, 214, 81, 86, 108, 77},
@@ -21,7 +20,8 @@ public class CamelliaSBlocks
             {233, 121, 167, 140, 159, 110, 188, 142, 41, 245, 249, 182, 47, 253, 180, 89},
             {120, 152, 6, 106, 231, 70, 113, 186, 212, 37, 171, 66, 136, 162, 141, 250},
             {114, 7, 185, 85, 248, 238, 172, 10, 54, 73, 42, 104, 60, 56, 241, 164},
-            {64, 40, 211, 123, 187, 201, 67, 193, 21, 227, 173, 244, 119, 199, 128, 158}};
+            {64, 40, 211, 123, 187, 201, 67, 193, 21, 227, 173, 244, 119, 199, 128, 158}
+    };
 
     public static byte getSBox1(byte value)
     {
@@ -29,36 +29,30 @@ public class CamelliaSBlocks
         // вторые четыре бита это столбец
         int row = (value >> 4) & 0x0F;
         int column = value & 0x0F;
-        return (byte) SBOX1[row][column];
+        return (byte)(SBOX1[row][column] & 0xFF);
     }
 
     public static byte getSBox2(byte value)
     {
-        byte valueFromSBox1 = (byte) getSBox1(value);
-        return cycleShift(valueFromSBox1,1);
+        byte valueFromSBox1 = getSBox1(value);
+        return cycleShift(valueFromSBox1, 1);
     }
 
     public static byte getSBox3(byte value)
     {
-        byte valueFromSBox1 = (byte) getSBox1(value);
+        byte valueFromSBox1 = getSBox1(value);
         return cycleShift(valueFromSBox1,7);
     }
 
-    public static byte getSBox4(int value)
+    public static byte getSBox4(byte value)
     {
         int shiftX = cycleShift(value, 1);
-        return getSBox1((byte)shiftX);
+        return getSBox1((byte) (shiftX & 0xFF));
     }
 
     private static byte cycleShift(byte value, int shift)
     {
         int temp = (value & 0xFF) >> (NUMBER_BIT_IN_BYTE - shift);
-        return (byte)((value << shift) + temp);
-    }
-
-    public static int cycleShift(int value, int shift)
-    {
-        int temp = (value) >>> (NUMBER_BIT_IN_INT - shift);
-        return ((value << shift) + temp);
+        return (byte) ((value << shift) | temp);
     }
 }
