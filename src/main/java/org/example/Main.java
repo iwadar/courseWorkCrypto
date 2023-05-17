@@ -1,53 +1,19 @@
 package org.example;
 
-import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.List;
+import org.example.camellia.Camellia;
+import org.example.camellia.CamelliaKey;
+import org.example.elgamal.ElgamalEncrypt;
+import org.example.elgamal.ElgamalKey;
+import org.example.elgamal.ElgamalPublicKey;
+
 import java.util.Random;
+import java.util.stream.Collectors;
+
+import static org.example.HelpFunction.*;
 
 public class Main {
 
-    private static byte[] getArray128(byte[] initArray, int startIndex)
-    {
-        byte[] copy = new byte[16];
-        System.arraycopy(initArray, startIndex, copy, 0, 16);
-        return copy;
-    }
 
-    private static long[] getLongFrom128Byte(byte[] initArray)
-    {
-        byte[] bla = new byte[8];
-        byte[] bla1 = new byte[8];
-        System.arraycopy(initArray, 0, bla, 0, 8);
-        System.arraycopy(initArray, 8, bla1, 0, 8);
-        long[] res = {bytesToLong(bla), bytesToLong(bla1)};
-        return res;
-    }
-    private static byte[] longToBytes(long l) {
-        byte[] result = new byte[Long.BYTES];
-        for (int i = Long.BYTES - 1; i >= 0; i--) {
-            result[i] = (byte)(l & 0xFF);
-            l >>= Byte.SIZE;
-        }
-        return result;
-    }
-
-    private static long bytesToLong(final byte[] b) {
-        long result = 0;
-        for (int i = 0; i < Long.BYTES; i++) {
-            result <<= Byte.SIZE;
-            result |= (b[i] & 0xFF);
-        }
-        return result;
-    }
-
-    private static byte[] deletePadding(byte[] input)
-    {
-        int paddingLength = input[input.length - 1];
-        byte[] tmp = new byte[input.length - paddingLength];
-        System.arraycopy(input, 0, tmp, 0, tmp.length);
-        return tmp;
-    }
     public static void main(String[] args) {
         System.out.println("Hello world!");
 //        BigInteger n = new BigInteger("4");
@@ -149,52 +115,97 @@ public class Main {
 //        int bla = (int) ((0xa7 << 1) | (0xa7 >> (32 - 1)));
 //        System.out.println(bla);
 
+//        String key1 = "ajshklfshxt5jjhslijhpi48";
+//
+//        CamelliaKey k = new CamelliaKey();
+//        k.generateKeys(key1);
+//
+//        Camellia algo = new Camellia(k);
+//
+//        String t = "hello, dasha!  I love Korol and Shut!\n WOW! I love Gorshok soooooo much too!!!";
+//
+//        byte[] textByte = t.getBytes();
+//        int lengthPadding = 16 - textByte.length % 16;
+//        byte[] copyInputArrayWithPadding = new byte[textByte.length + lengthPadding];
+//        System.arraycopy(textByte, 0, copyInputArrayWithPadding, 0, textByte.length);
+//        for (int i = 0; i < lengthPadding; i++)
+//        {
+//            copyInputArrayWithPadding[textByte.length + i] = (byte)lengthPadding;
+//        }
+//
+//        long[] encryptText = new long[copyInputArrayWithPadding.length / 16 * 2];
+////        byte[] byteEncryptText = new byte[]
+//
+//        int count = 0;
+//        for (int i = 0; i < copyInputArrayWithPadding.length; i += 16)
+//        {
+//            byte[] bla = getArray128(copyInputArrayWithPadding, i);
+//            long[] Ds = getLongFrom128Byte(bla);
+//
+//            var encrypt = algo.encrypt(Ds[0], Ds[1]);
+//            System.arraycopy(longToBytes(encrypt[0]), 0, copyInputArrayWithPadding, i, 8);
+//            System.arraycopy(longToBytes(encrypt[1]), 0, copyInputArrayWithPadding, i + Long.BYTES, 8);
+//
+////            encryptText[count] = encrypt[0];
+////            encryptText[count + 1] = encrypt[1];
+////            count += 2;
+//        }
+
+//        for (int i = 0; i < encryptText.length; i++)
+//        {
+//            System.out.print(new String(longToBytes(encryptText[i])));
+//        }
+//        System.out.println(new String(copyInputArrayWithPadding));
+
+//        byte[] decryptTEXTTTTTTTTTT = new byte[encryptText.length * Long.BYTES];
+//        for (int i = 0; i < encryptText.length; i += 2)
+//        {
+//            var decrypt = algo.decrypt(encryptText[i], encryptText[i+1]);
+//            System.arraycopy(longToBytes(decrypt[0]), 0, decryptTEXTTTTTTTTTT, i * Long.BYTES, 8);
+//            System.arraycopy(longToBytes(decrypt[1]), 0, decryptTEXTTTTTTTTTT, (i + 1) * Long.BYTES, 8);
+//        }
+//        decryptTEXTTTTTTTTTT = deletePadding(decryptTEXTTTTTTTTTT);
+//        System.out.println(new String(decryptTEXTTTTTTTTTT));
+
+//        for (int i = 0; i < copyInputArrayWithPadding.length; i += 16)
+//        {
+//            byte[] bla = getArray128(copyInputArrayWithPadding, i);
+//            long[] Ds = getLongFrom128Byte(bla);
+//
+//            var encrypt = algo.decrypt(Ds[0], Ds[1]);
+//            System.arraycopy(longToBytes(encrypt[0]), 0, copyInputArrayWithPadding, i, 8);
+//            System.arraycopy(longToBytes(encrypt[1]), 0, copyInputArrayWithPadding, i + Long.BYTES, 8);
+//
+////            encryptText[count] = encrypt[0];
+////            encryptText[count + 1] = encrypt[1];
+////            count += 2;
+//        }
+//                copyInputArrayWithPadding = deletePadding(copyInputArrayWithPadding);
+//
+//        System.out.println(new String(copyInputArrayWithPadding));
+
+
+//        ------------------------- MODES TRAIN ---------------------------------------------
         String key1 = "ajshklfshxt5jjhslijhpi48";
+//
         CamelliaKey k = new CamelliaKey();
-        k.generateKeys(key1);
+//        k.generateKeys(key1);
 
+        k.generateKeys(generateRandomString(32));
+//
         Camellia algo = new Camellia(k);
-
-        String t = "hello, dasha!  I love Korol and Shut!\n WOW! I love Gorshok soooooo much too!!!";
+//
+        String t = "hello, dasha! I love Korol and Shut!\nWOW! I love Gorshok soooooo much too!!!\nKak ge djoker you xiter";
 
         byte[] textByte = t.getBytes();
-        int lengthPadding = 16 - textByte.length % 16;
-        byte[] copyInputArrayWithPadding = new byte[textByte.length + lengthPadding];
-        System.arraycopy(textByte, 0, copyInputArrayWithPadding, 0, textByte.length);
-        for (int i = 0; i < lengthPadding; i++)
-        {
-            copyInputArrayWithPadding[textByte.length + i] = (byte)lengthPadding;
-        }
+//        ECBMode m = new ECBMode(algo);
 
-        long[] encryptText = new long[copyInputArrayWithPadding.length / 16 * 2];
+        RDMode m = new RDMode(algo, generateRandomString(16).getBytes());
+        byte[] encr = m.encrypt(textByte);
+        System.out.println(new String(encr));
+        byte[] decr = m.decrypt(encr);
 
-        int count = 0;
-        for (int i = 0; i < copyInputArrayWithPadding.length; i += 16)
-        {
-            byte[] bla = getArray128(copyInputArrayWithPadding, i);
-            long[] Ds = getLongFrom128Byte(bla);
-
-            var encrypt = algo.encrypt(Ds[0], Ds[1]);
-            encryptText[count] = encrypt[0];
-            encryptText[count + 1] = encrypt[1];
-            count += 2;
-        }
-
-        for (int i = 0; i < encryptText.length; i++)
-        {
-            System.out.print(new String(longToBytes(encryptText[i])));
-        }
-        System.out.println();
-
-        byte[] decryptTEXTTTTTTTTTT = new byte[encryptText.length * Long.BYTES];
-        for (int i = 0; i < encryptText.length; i += 2)
-        {
-            var decrypt = algo.decrypt(encryptText[i], encryptText[i+1]);
-            System.arraycopy(longToBytes(decrypt[0]), 0, decryptTEXTTTTTTTTTT, i * Long.BYTES, 8);
-            System.arraycopy(longToBytes(decrypt[1]), 0, decryptTEXTTTTTTTTTT, (i + 1) * Long.BYTES, 8);
-        }
-        decryptTEXTTTTTTTTTT = deletePadding(decryptTEXTTTTTTTTTT);
-        System.out.println(new String(decryptTEXTTTTTTTTTT));
+        System.out.println(new String(decr));
 
     }
 }
