@@ -41,6 +41,13 @@ public class Main {
         return result;
     }
 
+    private static byte[] deletePadding(byte[] input)
+    {
+        int paddingLength = input[input.length - 1];
+        byte[] tmp = new byte[input.length - paddingLength];
+        System.arraycopy(input, 0, tmp, 0, tmp.length);
+        return tmp;
+    }
     public static void main(String[] args) {
         System.out.println("Hello world!");
 //        BigInteger n = new BigInteger("4");
@@ -142,12 +149,14 @@ public class Main {
 //        int bla = (int) ((0xa7 << 1) | (0xa7 >> (32 - 1)));
 //        System.out.println(bla);
 
-        String key1 = "ssvjkjngslfkjgns";
+        String key1 = "ajshklfshxt5jjhslijhpi48";
         CamelliaKey k = new CamelliaKey();
         k.generateKeys(key1);
+
         Camellia algo = new Camellia(k);
 
-        String t = "hello, dasha!";
+        String t = "hello, dasha!  I love Korol and Shut!\n WOW! I love Gorshok soooooo much too!!!";
+
         byte[] textByte = t.getBytes();
         int lengthPadding = 16 - textByte.length % 16;
         byte[] copyInputArrayWithPadding = new byte[textByte.length + lengthPadding];
@@ -158,8 +167,7 @@ public class Main {
         }
 
         long[] encryptText = new long[copyInputArrayWithPadding.length / 16 * 2];
-        long[] decryptText = new long[copyInputArrayWithPadding.length / 16 * 2];
-//
+
         int count = 0;
         for (int i = 0; i < copyInputArrayWithPadding.length; i += 16)
         {
@@ -178,18 +186,15 @@ public class Main {
         }
         System.out.println();
 
-
+        byte[] decryptTEXTTTTTTTTTT = new byte[encryptText.length * Long.BYTES];
         for (int i = 0; i < encryptText.length; i += 2)
         {
             var decrypt = algo.decrypt(encryptText[i], encryptText[i+1]);
-            decryptText[i] = decrypt[0];
-            decryptText[i + 1] = decrypt[1];
+            System.arraycopy(longToBytes(decrypt[0]), 0, decryptTEXTTTTTTTTTT, i * Long.BYTES, 8);
+            System.arraycopy(longToBytes(decrypt[1]), 0, decryptTEXTTTTTTTTTT, (i + 1) * Long.BYTES, 8);
         }
-        for (int i = 0; i < decryptText.length; i++)
-        {
-//            byte[] bla = longToByteArray(decryptText[i]);
-            System.out.print(new String(longToBytes(decryptText[i])));
-        }
-        System.out.println();
+        decryptTEXTTTTTTTTTT = deletePadding(decryptTEXTTTTTTTTTT);
+        System.out.println(new String(decryptTEXTTTTTTTTTT));
+
     }
 }
